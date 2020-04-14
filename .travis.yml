@@ -1,0 +1,23 @@
+language: cpp
+matrix:
+  include:
+  - os: osx
+    #https://docs.travis-ci.com/user/reference/osx/
+    osx_image: xcode11.3
+    #https://gowrav.com/qt-for-vesc-on-macos/
+    sudo: required
+    before_install:
+    - brew install qt
+    - brew link qt --force
+    # - export PATH="/usr/local/opt/qt/bin:$PATH"
+    # - export LDFLAGS="-L/usr/local/opt/qt/lib"
+    # - export CPPFLAGS="-I/usr/local/opt/qt/include"
+    script:
+    - cd vesc_tool
+    - qmake -config release "CONFIG += release_macos build_original"
+    - make clean
+    - make -j8
+    - rm -rf build/macos/obj
+    - cd build/macos
+    - zip -r -X $(ls -1 | sed -e 's/\.app$//' | grep vesc).zip $(ls | grep vesc)
+    - curl --upload-file $(ls | grep *.zip) https://transfer.sh/mak_vesc_tool-git.$(git rev-parse --short HEAD).zip
