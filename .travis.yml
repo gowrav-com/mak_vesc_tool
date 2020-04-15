@@ -2,16 +2,12 @@ language: cpp
 matrix:
   include:
   - os: osx
-    #https://docs.travis-ci.com/user/reference/osx/
     osx_image: xcode11.3
-    #https://gowrav.com/qt-for-vesc-on-macos/
     sudo: required
     before_install:
+    - brew install jq
     - brew install qt
     - brew link qt --force
-    # - export PATH="/usr/local/opt/qt/bin:$PATH"
-    # - export LDFLAGS="-L/usr/local/opt/qt/lib"
-    # - export CPPFLAGS="-I/usr/local/opt/qt/include"
     script:
     - cd vesc_tool
     - qmake -config release "CONFIG += release_macos build_original"
@@ -20,4 +16,12 @@ matrix:
     - rm -rf build/macos/obj
     - cd build/macos
     - zip -r -X $(ls -1 | sed -e 's/\.app$//' | grep vesc).zip $(ls | grep vesc)
-    - curl --upload-file $(ls | grep *.zip) https://transfer.sh/mak_vesc_tool-git.$(git rev-parse --short HEAD).zip
+    - export RELEASE_USER=gowrav-com
+    - export GITHUB_TOKEN=
+      secure: S3Mipf3tmb8ZnhENXW/GtBa5m/7IkOXF1dmz8/ng1ntWd+IukLn+zV6H7SFeWmoGEXi73lQKKAWQrox8SBGfQttP3mQU1zHSAIx9EC/psvU7ZTaN2qtnZ7NVN2jRGTydzqjhpRM7Fgqbs3pCjITEkKNc6xXK5r8uE31meD2kb6R614LXuZkO6eHqp5OkvbXSSeYJfyXLOBalFJE4y/p1+9A+8/yGp4+mpDhYWKEfSYblcdqRUqyqz5FkSMiGPuLSeNVgTxnemIuePD5eLdoTdHFy27eXbn95PyKOed/4AssYgKHI9hpugJ8MXFPalGTEilnySy2Wm/9MncE9c2Au+Mcr+Nr4c4NP7mIi6tBkhOnmmCDQ3/yMGLU7CaB0/1nEf5STo8IfNnUqwJb2zUs/FH7EGdiC7MHdP/UhEBmCDMtuHTzxmklUjp4XjjF6eJ9nXYWvc1AiMugZqmKePJvdsQLWYDmiNNhT699IvHr8aqqUPrZ7U6vUQt+kB3LbEosnwzdv6G/nUVuFzqT5qF3HNLNXfFz07h90LjJlqE1iQcCnP6gO/U2CMe/dCMJAzb0b8AvPxdPABgat/341u1NlECNiC8H3DMu7AyPQVe8jg0+/eR9R1F0ozKKOEomD2ZLfI1C/X2enc0fOoyWIhRlwrW9Qw9PJLU6oSKeVp/Y8O/4=
+    - export RELEASE_REPO=mak_vesc_tool
+    - export RELEASE_TAG=v$(ls -1 | grep .app | sed -e 's/\.app$//' | sed -e 's/vesc_tool_//')
+    - export RELEASE_FILE_NAME=$(ls -1 | grep .zip)
+    - export RELEASE_FILE_PATH=$(ls -1 | grep .zip)
+    - ./ok.sh list_releases "$RELEASE_USER" "$RELEASE_REPO" | awk -v "tag="$RELEASE_TAG"" -F'\t' '$2 == tag { print $3 }' |  xargs -I@ ./ok.sh curl -H "Authorization: token "$GITHUB_TOKEN"" -X DELETE https://api.github.com/repos/"$RELEASE_USER"/"$RELEASE_REPO"/releases/@
+    - ./ok.sh create_release "$RELEASE_USER" "$RELEASE_REPO" "$RELEASE_TAG" name=macOS_VESC_Tool_$RELEASE_TAG prerelease=true _filter='.upload_url' | sed 's/{.*$/?name='"$RELEASE_FILE_NAME"'/' | xargs -I@ ./ok.sh upload_asset @ "$RELEASE_FILE_PATH"
