@@ -2,27 +2,24 @@ language: cpp
 os: osx
 osx_image: xcode11.3
 before_install:
-  - brew install jq
-  - brew install qt
-  - brew link qt --force
+- brew install jq
+- brew install qt
+- brew link qt --force
 script:
-  - cd vesc_tool
-  - qmake -config release "CONFIG += release_macos build_original"
-  - make clean
-  - make -j8
-  - rm -rf build/macos/obj
-  - cd build/macos
-  - zip -r -X $(ls -1 | sed -e 's/\.app$//' | grep vesc).zip $(ls | grep vesc)
-  - export RELEASE_USER=gowrav-com
-  - export GITHUB_TOKEN=
-    secure: bOLIzErneB1if3XYggj14p4RzOrBnzyjWpUnWLjCxrG4cGZFSkbjVBwtUF/LkA9/YVzQdbt+ACnV2ZOYQVudrw+MNCHWiGwoiR7zfqNQX7vo0ysLDtTlGBvWCLpyvWAR1D49gZ0ugWsC83aFY8QFL4VM6o1pG+s5kTngKFcOJBCN9YKZgrjy0mzchkpLII/pIPP6HWnw2FTGhAHhUkxMn035ThESEfxpWYHewdjGN33PE9H3SUWoLXnFp1Xf3ft67jfAqDqu2uDszDaGe0j74r01j55l4VjBVQYQGDhENTJvcyuNEgtWWRWy2hBzkUvN62EInRbkWSqSi17ls1ZPXMvfrSCY4AVokS9DwsYTMDyTG0gX1N6yfUwczbAHDoOo/TPsDv31p5kzoisq6fLr5tppd+fH4v+0IiWt/MXrxsoWgMih5Ge6no7GXT2caDUBDPQw7QHP/VmDE2ir1sGxK1RipgWBCLMbMzP3IMKlTEYFk57eNedHnB3exAZJP7wH+3pvmNTFbTH9xz4dekwNtuFrHeAUsGnD4IQyCyu5zvgLnrDPF41VYQHWJfVoohf4vTm4wilAJkf2vXQGQ8FTV5ns3b5ec4lEzWdPzvwhjMOCCOLNdQUWKsQdJqZuhvp+BQVGxcDLICguEm+6R/mZK8MQu+6L6e3HZgraqDtrdCU=
-  - export RELEASE_REPO=mak_vesc_tool
-  - export RELEASE_TAG=v$(ls -1 | grep .app | sed -e 's/\.app$//' | sed -e 's/vesc_tool_//')
-  - export RELEASE_FILE_NAME=$(ls -1 | grep .zip)
-  - export RELEASE_FILE_PATH=$(ls -1 | grep .zip)
-  - ./ok.sh list_releases "$RELEASE_USER" "$RELEASE_REPO" | awk -v "tag="$RELEASE_TAG"" -F'\t' '$2 == tag { print $3 }' | xargs -I@ ./ok.sh curl -H "Authorization:token "$GITHUB_TOKEN"" -X DELETE https://api.github.com/repos/"$RELEASE_USER"/"$RELEASE_REPO"/releases/@
-  - ./ok.sh create_release "$RELEASE_USER" "$RELEASE_REPO" "$RELEASE_TAG" name=macOS_VESC_Tool_$RELEASE_TAG prerelease=true _filter='.upload_url' | sed 's/{.*$/?name='"$RELEASE_FILE_NAME"'/' | xargs -I@ ./ok.sh upload_asset @ "$RELEASE_FILE_PATH"
+- cd vesc_tool
+- qmake -config release "CONFIG += release_macos build_original"
+- make clean
+- make -j8
+- rm -rf build/macos/obj
+- cd build/macos
+- zip -r -X $(ls -1 | sed -e 's/\.app$//' | grep vesc).zip $(ls | grep vesc)
+- export RELEASE_USER=gowrav-com
+- export RELEASE_REPO=mak_vesc_tool
+- export RELEASE_TAG=v$(ls -1 | grep .app | sed -e 's/\.app$//' | sed -e 's/vesc_tool_//')
+- export RELEASE_FILE_NAME=$(ls -1 | grep .zip)
+- export RELEASE_FILE_PATH=$(ls -1 | grep .zip)
+- ./ok.sh list_releases "$RELEASE_USER" "$RELEASE_REPO" | awk -v "tag="$RELEASE_TAG"" -F'\t' '$2 == tag { print $3 }' | xargs -I@ ./ok.sh curl -H "Authorization:token "$GITHUB_TOKEN"" -X DELETE https://api.github.com/repos/"$RELEASE_USER"/"$RELEASE_REPO"/releases/@
+- ./ok.sh create_release "$RELEASE_USER" "$RELEASE_REPO" "$RELEASE_TAG" name=macOS_VESC_Tool_$RELEASE_TAG prerelease=true _filter='.upload_url' | sed 's/{.*$/?name='"$RELEASE_FILE_NAME"'/' | xargs -I@ ./ok.sh upload_asset @ "$RELEASE_FILE_PATH"
 env:
   global:
-    secure: bOLIzErneB1if3XYggj14p4RzOrBnzyjWpUnWLjCxrG4cGZFSkbjVBwtUF/LkA9/YVzQdbt+ACnV2ZOYQVudrw+MNCHWiGwoiR7zfqNQX7vo0ysLDtTlGBvWCLpyvWAR1D49gZ0ugWsC83aFY8QFL4VM6o1pG+s5kTngKFcOJBCN9YKZgrjy0mzchkpLII/pIPP6HWnw2FTGhAHhUkxMn035ThESEfxpWYHewdjGN33PE9H3SUWoLXnFp1Xf3ft67jfAqDqu2uDszDaGe0j74r01j55l4VjBVQYQGDhENTJvcyuNEgtWWRWy2hBzkUvN62EInRbkWSqSi17ls1ZPXMvfrSCY4AVokS9DwsYTMDyTG0gX1N6yfUwczbAHDoOo/TPsDv31p5kzoisq6fLr5tppd+fH4v+0IiWt/MXrxsoWgMih5Ge6no7GXT2caDUBDPQw7QHP/VmDE2ir1sGxK1RipgWBCLMbMzP3IMKlTEYFk57eNedHnB3exAZJP7wH+3pvmNTFbTH9xz4dekwNtuFrHeAUsGnD4IQyCyu5zvgLnrDPF41VYQHWJfVoohf4vTm4wilAJkf2vXQGQ8FTV5ns3b5ec4lEzWdPzvwhjMOCCOLNdQUWKsQdJqZuhvp+BQVGxcDLICguEm+6R/mZK8MQu+6L6e3HZgraqDtrdCU=
-
+  - secure: oeXy7e55XE0nQ/SwU/VEdmUl5IV2r87LVZJQLEdDoqXHNc9CJwhaPGUp/0daOWPYyrRMdZPV533d//vb8xEH5cK7pc7MkAK6B8dl5PxnV9uR5ei0o4cvI9HKTJ20Y5MCGqBPH+6OQzoCw+mOAYLe0N4Alzp6ZPAq5mffGQx2CB4hMHK4hcQUJamUkFsfX92YR2uyT4+6ZZ4DiNE1atxCMy0mStGaNqEEVhVOegiBYf1Lg6FMf1DDq45sO1lqlnLoRacHHYRsATVS5GixmcAHidgKFFUQBs617eOS6k0W7PvoGVQZnVNFXtTwOmQzvD7mfNbcpv50wc1OHnsI2rwuEww92Pmf+X4cHRIBW+S5XQT6m3MUQ2iK4eTqpjnzAOFPwY/UFoDKz5dy5oGw6XzrFKSEcMjWjd4uwkMa1fJGFLErijor9Tm+nCNbceGeEGso3OPmAMNXUGFQkbJiXVigAUIplHBiwRn2jFHEDWUp0ir3USjuVFw9nD5ng+DP3LM23Hztm+6LHlXw5gINFYc9az1LpzL/QS5avhYvGcr+f7Km5HPPjfm4b3IWIAWRo7GCeyisy554zMVx8jP3V2NX+M8Be8puChpsIcFCUGkw5pCy8czs6wtCd7a0e4FBkm1rOnt2I8tisxIiEBdxGqGzf/kkuHG73AKnMGa6sQw6baM=
